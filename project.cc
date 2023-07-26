@@ -36,9 +36,9 @@ void init_db(struct School *school);
 void addStudentToDB(struct School *school, struct Student *student);
 void displayMenu();
 int saveStudentData(const char *filename, struct Student *students, int num_students);
-
-
-
+void addNewStudent(struct Student *students, int *num_students, struct School *school);
+void viewAllStudents(struct Student *students, int num_students) ;
+void processMenuOptions(struct Student *students, int *num_students, struct School *school);
 
 //------------------------------main------------------------------------
 
@@ -60,6 +60,56 @@ int main() {
         return EXIT_FAILURE;
     }
 
+    // Process the menu options
+    processMenuOptions(students, &num_students, &school);
+
+    return EXIT_SUCCESS;
+}
+
+
+// Function to handle admission of a new student
+void addNewStudent(struct Student *students, int *num_students, struct School *school) {
+    if (*num_students >= LEN) {
+        printf("Database is full. Cannot add more students.\n");
+    } else {
+        struct Student newStudent;
+        printf("Enter student's first name: ");
+        scanf("%s", newStudent.first_name);
+        printf("Enter student's last name: ");
+        scanf("%s", newStudent.last_name);
+        printf("Enter student's telephone: ");
+        scanf("%s", newStudent.telephone);
+        printf("Enter student's number of layers: ");
+        scanf("%d", &newStudent.num_layers);
+        printf("Enter student's number of class: ");
+        scanf("%d", &newStudent.num_of_class);
+        printf("Enter student's grades (%d grades): ", NUM_OF_GRADES);
+        for (int i = 0; i < NUM_OF_GRADES; i++) {
+            scanf("%d", &newStudent.grades[i]);
+        }
+
+        // Add the new student to the database
+        addStudentToDB(school, &newStudent);
+        students[*num_students] = newStudent;
+        (*num_students)++;
+
+        // Save changes to the file after adding the new student
+        if (!saveStudentData("db_file.txt", students, *num_students)) {
+            printf("Error saving changes to the file.\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
+// Function to handle viewing all students
+void viewAllStudents(struct Student *students, int num_students) {
+    for (int i = 0; i < num_students; i++) {
+        printStudentData(&students[i]);
+    }
+}
+
+// Function to handle user input and menu options
+void processMenuOptions(struct Student *students, int *num_students, struct School *school) {
     int choice;
     do {
         displayMenu();
@@ -68,40 +118,10 @@ int main() {
 
         switch (choice) {
             case 1: // Admission of a new student
-                if (num_students >= LEN) {
-                    printf("Database is full. Cannot add more students.\n");
-                } else {
-                    struct Student newStudent;
-                    printf("Enter student's first name: ");
-                    scanf("%s", newStudent.first_name);
-                    printf("Enter student's last name: ");
-                    scanf("%s", newStudent.last_name);
-                    printf("Enter student's telephone: ");
-                    scanf("%s", newStudent.telephone);
-                    printf("Enter student's number of layers: ");
-                    scanf("%d", &newStudent.num_layers);
-                    printf("Enter student's number of class: ");
-                    scanf("%d", &newStudent.num_of_class);
-                    printf("Enter student's grades (%d grades): ", NUM_OF_GRADES);
-                    for (int i = 0; i < NUM_OF_GRADES; i++) {
-                        scanf("%d", &newStudent.grades[i]);
-                    }
-
-                    // Add the new student to the database
-                    addStudentToDB(&school, &newStudent);
-                    students[num_students++] = newStudent;
-
-                    // Save changes to the file after adding the new student
-					if (!saveStudentData("db_file.txt", students, num_students)) {
-						printf("Error saving changes to the file.\n");
-						return EXIT_FAILURE;
-					}
-                }
+                addNewStudent(students, num_students, school);
                 break;
             case 2: // View all students
-                for (int i = 0; i < num_students; i++) {
-                    printStudentData(&students[i]);
-                }
+                viewAllStudents(students, *num_students);
                 break;
             case 3: // Exit
                 printf("Exiting...\n");
@@ -112,8 +132,6 @@ int main() {
 
         printf("\n");
     } while (choice != 3);
-
-    return EXIT_SUCCESS;
 }
 
 
