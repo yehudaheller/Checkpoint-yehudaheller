@@ -47,6 +47,7 @@ void freeStudentMemory(struct Student* student);
 void findCandidatesForDeparture(struct Student* students, int num_students, int grade_threshold);
 double calculateAverage(struct Student* students, int num_students, int grade_num, int num_layers) ;
 void calculateAverageForGradeAndLayer(struct Student* students, int num_students) ;
+void clearInputBuffer();
 //------------------------------main------------------------------------
 
 // Declare gradeNumberToCompare as a global variable
@@ -426,46 +427,59 @@ void displayMenu() {
     puts("9. Exit");
 }
 
+// Function to clear the input buffer
+void clearInputBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
 // Function for processing the menu options
 void processMenuOptions(struct Student** students, int* num_students, struct School* school) {
     int choice;
+    bool validChoice;
+
     do {
         displayMenu();
         printf("Enter your choice: ");
-        scanf("%d", &choice);
 
-        switch (choice) {
-            case 1: // Admission of a new student
-                addNewStudent(students, num_students, school);
-                break;
-            case 2: // View all students
-                viewAllStudents(*students, *num_students);
-                break;
-            case 3: // Search for a student
-                searchStudent(*students, *num_students);
-                break;
-            case 4: // Edit student data
-                editStudentData(students, *num_students);
-                break;
-            case 5: // Delete a student
-                deleteStudent(students, num_students, school);
-                break;
-            case 6: // Find top 10 students with the specified grade in every level
-                // ...
-                break;
-            case 7: // Find candidates for departure
-                findCandidatesForDeparture(*students, *num_students, FAIL_GRADE); // Modify the grade threshold as needed
-                break;
-            case 8: // Calculate average for a specific grade and num_layers
-                calculateAverageForGradeAndLayer(*students, *num_students);
-                break;
-            case 9: // Exit
-                printf("Exiting...\n");
-                break;
-            default:
-                printf("Invalid choice. Try again.\n");
+        validChoice = scanf("%d", &choice) == 1;
+
+        if (validChoice) {
+            switch (choice) {
+                case 1: // Admission of a new student
+                    addNewStudent(students, num_students, school);
+                    break;
+                case 2: // View all students
+                    viewAllStudents(*students, *num_students);
+                    break;
+                case 3: // Search for a student
+                    searchStudent(*students, *num_students);
+                    break;
+                case 4: // Edit student data
+                    editStudentData(students, *num_students);
+                    break;
+                case 5: // Delete a student
+                    deleteStudent(students, num_students, school);
+                    break;
+                case 6: // Find top 10 students with the specified grade in every level
+                    // ...
+                    break;
+                case 7: // Find candidates for departure
+                    findCandidatesForDeparture(*students, *num_students, FAIL_GRADE); // Modify the grade threshold as needed
+                    break;
+                case 8: // Calculate average for a specific grade and num_layers
+                    calculateAverageForGradeAndLayer(*students, *num_students);
+                    break;
+                case 9: // Exit
+                    printf("Exiting...\n");
+                    break;
+                default:
+                    printf("Invalid choice. Try again.\n");
+            }
+        } else {
+            printf("Invalid input. Try again.\n");
+            clearInputBuffer();
         }
     } while (choice != 9);
 }
-
 
