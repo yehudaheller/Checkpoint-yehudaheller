@@ -52,7 +52,7 @@ void calculateCourseAverages(struct School* school);
 int gradeNumberToCompare;
 
 int main() {
-    struct Student* students = new Student[LEN];
+    struct Student* students = (struct Student*)malloc(LEN * sizeof(struct Student));
     int num_students = 0;
 
     struct School school;
@@ -84,7 +84,7 @@ int main() {
     for (int i = 0; i < num_students; i++) {
         freeStudentMemory(&students[i]);
     }
-    delete[] students;
+    free(students);
 
     return EXIT_SUCCESS;
 }
@@ -150,10 +150,19 @@ void printStudentData(struct Student* student) {
 
 // Function to read student data from the file
 int readStudentData(FILE* file, struct Student* student) {
-    if (fscanf(file, "%s %s %s %d %d", student->first_name, student->last_name,
-               student->telephone, &student->num_layers, &student->num_of_class) != 5) {
+    char first_name[LEN];
+    char last_name[LEN];
+    char telephone[LEN];
+
+    if (fscanf(file, "%s %s %s %d %d", first_name, last_name,
+               telephone, &student->num_layers, &student->num_of_class) != 5) {
         return 0;
     }
+
+    // Allocate memory for the strings and copy the data
+    student->first_name = strdup(first_name);
+    student->last_name = strdup(last_name);
+    student->telephone = strdup(telephone);
 
     // Read grades until the end of the line
     for (int i = 0; i < NUM_OF_GRADES; i++) {
