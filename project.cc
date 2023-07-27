@@ -10,6 +10,7 @@
 #define NUM_OF_GRADES 10
 #define LEVELS 12
 #define NUM_OF_CLASSES 10
+#define FAIL_GRADE 50
 
 //-----------------------------structs----------------------------------
 
@@ -44,8 +45,8 @@ void editStudentData(struct Student** students, int num_students);
 void deleteStudent(struct Student** students, int* num_students, struct School* school);
 void freeStudentMemory(struct Student* student);
 void findCandidatesForDeparture(struct Student* students, int num_students, int grade_threshold);
-void calculateCourseAverages(struct School* school);
-
+double calculateAverage(struct Student* students, int num_students, int grade_num, int num_layers) ;
+void calculateAverageForGradeAndLayer(struct Student* students, int num_students) ;
 //------------------------------main------------------------------------
 
 // Declare gradeNumberToCompare as a global variable
@@ -373,39 +374,44 @@ void findCandidatesForDeparture(struct Student* students, int num_students, int 
     }
 }
 
-// Function for option 8
-void calculateCourseAverages(struct School* school) {
-    int totalGrades[LEVELS][NUM_OF_CLASSES][NUM_OF_GRADES] = {0};
-    int numStudents[LEVELS][NUM_OF_CLASSES] = {0};
 
-    // Calculate total grades and number of students per course per layer
-    for (int i = 0; i < LEVELS; i++) {
-        for (int j = 0; j < NUM_OF_CLASSES; j++) {
-            if (school->DB[i][j] != NULL) {
-                for (int k = 0; k < NUM_OF_GRADES; k++) {
-                    totalGrades[i][j][k] += school->DB[i][j]->grades[k];
-                }
-                numStudents[i][j]++;
-            }
-        }
-    }
 
-    // Calculate and print the averages
-    printf("Course Averages per Layer:\n");
-    for (int i = 0; i < LEVELS; i++) {
-        for (int j = 0; j < NUM_OF_CLASSES; j++) {
-            if (numStudents[i][j] > 0) {
-                printf("Layer %d, Class %d:\n", i + 1, j + 1);
-                for (int k = 0; k < NUM_OF_GRADES; k++) {
-                    double average = (double)totalGrades[i][j][k] / numStudents[i][j];
-                    printf("Course %d: %.2f\n", k + 1, average);
-                }
-                printf("\n");
-            }
-        }
+
+// for 8:
+// Function to prompt the user for the grade and num_layers and calculate the average
+void calculateAverageForGradeAndLayer(struct Student* students, int num_students) {
+    int grade_num, num_layers;
+    printf("Enter the desired course number (1-10): ");
+    scanf("%d", &grade_num);
+    printf("Enter the desired layer (1-12): ");
+    scanf("%d", &num_layers);
+    
+    double average = calculateAverage(students, num_students, grade_num, num_layers);
+    if (average >= 0) {
+        printf("\n Average grade for students in course %d and layer %d \n is : %.2f\n \n", grade_num, num_layers, average);
+    } else {
+        printf("No students found with grade %d and num_layers = %d\n", grade_num, num_layers);
     }
 }
 
+// Function to calculate the average of students with a specific grade and num_layers
+double calculateAverage(struct Student* students, int num_students, int grade_num, int num_layers) {
+    int totalGrade = 0;
+    int count = 0;
+
+    for (int i = 0; i < num_students; i++) {
+        if (students[i].num_layers == num_layers ) {
+            totalGrade += students[i].grades[grade_num - 1];
+            count++;
+        }
+    }
+
+    if (count > 0) {
+        return (double)totalGrade / count;
+    } else {
+        return -1.0; // Return a negative value to indicate no students found
+    }
+}
 // Function for displaying the main menu
 void displayMenu() {
     puts("MENU:");
@@ -416,7 +422,7 @@ void displayMenu() {
     puts("5. Delete a student");
     puts("6. Find top 10 students with the specified grade in every level");
     puts("7. Find candidates for departure");
-    puts("8. Calculate average per course per layer");
+    puts("8. Calculate average for a specific courese and layer");
     puts("9. Exit");
 }
 
@@ -448,10 +454,10 @@ void processMenuOptions(struct Student** students, int* num_students, struct Sch
                 // ...
                 break;
             case 7: // Find candidates for departure
-                findCandidatesForDeparture(*students, *num_students, 50); // Modify the grade threshold as needed
+                findCandidatesForDeparture(*students, *num_students, FAIL_GRADE); // Modify the grade threshold as needed
                 break;
-            case 8: // Calculate average per course per layer
-                calculateCourseAverages(school);
+            case 8: // Calculate average for a specific grade and num_layers
+                calculateAverageForGradeAndLayer(*students, *num_students);
                 break;
             case 9: // Exit
                 printf("Exiting...\n");
@@ -461,3 +467,5 @@ void processMenuOptions(struct Student** students, int* num_students, struct Sch
         }
     } while (choice != 9);
 }
+
+
