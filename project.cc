@@ -41,6 +41,7 @@ void viewAllStudents(struct Student *students, int num_students) ;
 void processMenuOptions(struct Student *students, int *num_students, struct School *school);
 void searchStudent(struct Student *students, int num_students) ;
 struct Student* searchStudentByName(struct Student *students, int num_students, const char *first_name, const char *last_name) ;
+void editStudentData(struct Student *students, int num_students) ;
 
 //------------------------------main------------------------------------
 
@@ -51,15 +52,23 @@ int main() {
     struct School school;
     init_db(&school);
 
-    // Read from "students.txt" and save data to "db_file.txt" (the database file)
-    if (!openFileAndProcessStudents("students.txt", students, &num_students)) {
-        return EXIT_FAILURE;
-    }
-
-    // Save all data to "db_file.txt" before even showing the menu
-    if (!saveStudentData("db_file.txt", students, num_students)) {
-        printf("Error saving data to the file.\n");
-        return EXIT_FAILURE;
+    // Check if "db_file.txt" exists
+    FILE *db_file = fopen("db_file.txt", "r");
+    if (db_file) {
+        fclose(db_file);
+        // Read student data from "db_file.txt" if it exists
+        if (!openFileAndProcessStudents("db_file.txt", students, &num_students)) {
+            return EXIT_FAILURE;
+        }
+    } else {
+        // If "db_file.txt" doesn't exist, read from "students.txt" and create the file
+        if (!openFileAndProcessStudents("students.txt", students, &num_students)) {
+            return EXIT_FAILURE;
+        }
+        if (!saveStudentData("db_file.txt", students, num_students)) {
+            printf("Error saving data to the file.\n");
+            return EXIT_FAILURE;
+        }
     }
 
     // Process the menu options
@@ -67,6 +76,7 @@ int main() {
 
     return EXIT_SUCCESS;
 }
+
 
 
 // Function to handle admission of a new student
@@ -128,15 +138,19 @@ void processMenuOptions(struct Student *students, int *num_students, struct Scho
             case 3: // Search for a student
                 searchStudent(students, *num_students);
                 break;
-            case 4: // Exit
+            case 4: // Edit student data
+                editStudentData(students, *num_students);
+                break;
+            case 5: // Exit
                 printf("Exiting...\n");
                 break;
             default:
                 printf("Invalid choice. Try again.\n");
         }
 
-        printf("\n");
-    } while (choice != 4);
+        // ... Existing code ...
+
+    } while (choice != 5);
 }
 
 
@@ -219,7 +233,8 @@ void displayMenu() {
     puts("1. Add new student");
     puts("2. View all students");
     puts("3. Search for a student");
-    puts("4. Exit");
+    puts("4. Edit student data"); // New option for editing student data
+    puts("5. Exit");
 }
 
 
@@ -240,6 +255,9 @@ int saveStudentData(const char *filename, struct Student *students, int num_stud
         }
         fprintf(file, "\n");
     }
+	
+
+
 
     fclose(file);
 
@@ -275,3 +293,41 @@ void searchStudent(struct Student *students, int num_students) {
         printf("Student not found.\n");
     }
 }
+
+
+// Function to edit student data
+void editStudentData(struct Student *students, int num_students) {
+    char first_name[LEN];
+    char last_name[LEN];
+
+    printf("Enter student's first name: ");
+    scanf("%s", first_name);
+    printf("Enter student's last name: ");
+    scanf("%s", last_name);
+
+    struct Student *foundStudent = searchStudentByName(students, num_students, first_name, last_name);
+    if (foundStudent != NULL) {
+        // Allow editing the fields
+        printf("Enter student's telephone: ");
+        scanf("%s", foundStudent->telephone);
+        printf("Enter student's number of layers: ");
+        scanf("%d", &foundStudent->num_layers);
+        printf("Enter student's number of class: ");
+        scanf("%d", &foundStudent->num_of_class);
+        printf("Enter student's grades (%d grades): ", NUM_OF_GRADES);
+        for (int i = 0; i < NUM_OF_GRADES; i++) {
+            scanf("%d", &foundStudent->grades[i]);
+        }
+
+        // Save changes to the file after editing
+        if (!saveStudentData("db_file.txt", students, num_students)) {
+            printf("Error saving changes to the file.\n");
+            exit(EXIT_FAILURE);
+        }
+    } else {
+        printf("Student not found.\n");
+    }
+}
+
+
+
