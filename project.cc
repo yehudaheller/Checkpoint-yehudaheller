@@ -39,6 +39,8 @@ int saveStudentData(const char *filename, struct Student *students, int num_stud
 void addNewStudent(struct Student *students, int *num_students, struct School *school);
 void viewAllStudents(struct Student *students, int num_students) ;
 void processMenuOptions(struct Student *students, int *num_students, struct School *school);
+void searchStudent(struct Student *students, int num_students) ;
+struct Student* searchStudentByName(struct Student *students, int num_students, const char *first_name, const char *last_name) ;
 
 //------------------------------main------------------------------------
 
@@ -123,7 +125,10 @@ void processMenuOptions(struct Student *students, int *num_students, struct Scho
             case 2: // View all students
                 viewAllStudents(students, *num_students);
                 break;
-            case 3: // Exit
+            case 3: // Search for a student
+                searchStudent(students, *num_students);
+                break;
+            case 4: // Exit
                 printf("Exiting...\n");
                 break;
             default:
@@ -131,7 +136,7 @@ void processMenuOptions(struct Student *students, int *num_students, struct Scho
         }
 
         printf("\n");
-    } while (choice != 3);
+    } while (choice != 4);
 }
 
 
@@ -213,8 +218,10 @@ void displayMenu() {
     puts("MENU:");
     puts("1. Add new student");
     puts("2. View all students");
-    puts("3. Exit");
+    puts("3. Search for a student");
+    puts("4. Exit");
 }
+
 
 // Function to save student data to the file
 int saveStudentData(const char *filename, struct Student *students, int num_students) {
@@ -239,3 +246,32 @@ int saveStudentData(const char *filename, struct Student *students, int num_stud
     return 1;
 }
 
+// function for search student
+struct Student* searchStudentByName(struct Student *students, int num_students, const char *first_name, const char *last_name) {
+    for (int i = 0; i < num_students; i++) {
+        if (strcmp(students[i].first_name, first_name) == 0 && strcmp(students[i].last_name, last_name) == 0) {
+            return &students[i];
+        }
+    }
+    return NULL; // Student not found
+}
+
+
+// function for menu - search student
+void searchStudent(struct Student *students, int num_students) {
+    char first_name[LEN];
+    char last_name[LEN];
+
+    printf("Enter student's first name: ");
+    scanf("%s", first_name);
+    printf("Enter student's last name: ");
+    scanf("%s", last_name);
+
+    struct Student *foundStudent = searchStudentByName(students, num_students, first_name, last_name);
+    if (foundStudent != NULL) {
+		puts("\nResult:\n-------------------");
+        printStudentData(foundStudent);
+    } else {
+        printf("Student not found.\n");
+    }
+}
